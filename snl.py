@@ -90,8 +90,46 @@ def roll_dice():
     dice_btn.place(x=1025, y=150)
 
 
+def get_Index():
+    global coin1, coin2
+
+    # fmt: off
+    Num = [
+        100, 99, 98, 97, 96, 95, 94, 93, 92, 91,
+        81, 82, 83, 84, 85, 86, 87, 88, 89, 90,
+        80, 79, 78, 77, 76, 75, 74, 73, 72, 71,
+        61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
+        60, 59, 58, 57, 56, 55, 54, 53, 52, 51,
+        41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+        40, 39, 38, 37, 36, 35, 34, 33, 32, 31,
+        21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+        20, 19, 18, 17, 16, 15, 14, 13, 12, 11,
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+    ]
+    # fmt: on
+
+    # coin1.place(x=54 + 90 * 9, y=580 - 60 * 3)
+    # coin2.place(x=95 + 90 * 9, y=580 - 60 * 3)
+    # row = 60
+    # col = 90
+
+    row = 60
+    i = 0
+    for x in range(1, 11):
+        col = 90
+        for y in range(1, 11):
+            Index[Num[i]] = (col, row)
+            col = col + 101
+            i = i + 1
+        row = row + 81
+    print(Index)
+
+
 # List to store dice images
 Dice = []
+
+# Store x & y coordinates of given Num
+Index = {}
 
 root = tk.Tk()
 root.geometry("1200x800")
@@ -109,7 +147,6 @@ Lab.place(x=50, y=30)
 coin1 = tk.Canvas(root, width=40, height=40)
 coin1.create_oval(10, 10, 40, 40, fill="cyan")
 
-
 # Player 2 coin
 coin2 = tk.Canvas(root, width=40, height=40)
 coin2.create_oval(10, 10, 40, 40, fill="orange")
@@ -119,6 +156,9 @@ turn = 1
 
 # Keep coins at initial position
 reset_coins()
+
+# Get Index of Each Num
+get_Index()
 
 # Load Dice Images
 load_dice_images()
