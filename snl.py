@@ -5,34 +5,13 @@ import random
 
 def start_game():
     global img_roll
+    global ply1_btn, ply2_btn
 
     # Buttons for Players
     # Player 1
-    ply1_btn = tk.Button(
-        root,
-        text="Player 1",
-        height=1,
-        width=10,
-        fg="red",
-        bg="cyan",
-        font=("Cursive", 14, "bold"),
-        activebackground="white",
-        command=roll_dice,
-    )
     ply1_btn.place(x=1000, y=300)
 
     # Player 2
-    ply2_btn = tk.Button(
-        root,
-        text="Player 2",
-        height=1,
-        width=10,
-        fg="red",
-        bg="orange",
-        font=("Cursive", 14, "bold"),
-        activebackground="white",
-        command=roll_dice,
-    )
     ply2_btn.place(x=1000, y=400)
 
     # Exit
@@ -59,9 +38,12 @@ def start_game():
 
 def reset_coins():
     global coin1, coin2
+    global pos1, pos2
 
-    coin1.place(x=50, y=580)
-    coin2.place(x=90, y=580)
+    coin1.place(x=1015, y=580)
+    coin2.place(x=1065, y=580)
+
+    pos1, pos2 = 0, 0
 
 
 def load_dice_images():
@@ -82,12 +64,102 @@ def load_dice_images():
         Dice.append(img_roll)
 
 
+def check_ladder(turn):
+    global pos1, pos2
+    global ladder
+
+    # No Ladder
+    f = 0
+    if turn == 1:
+        if pos1 in ladder:
+            pos1 = ladder[pos1]
+            f = 1
+        else:
+            if pos2 in ladder:
+                pos2 = ladder[pos2]
+                f = 1
+
+    return f
+
+
+def check_snake(turn):
+    global pos1, pos2
+    global snake
+
+    # No Snake
+    s = 0
+    if turn == 1:
+        if pos1 in snake:
+            pos1 = snake[pos1]
+            s = 1
+        else:
+            if pos2 in snake:
+                pos2 = snake[pos2]
+                s = 1
+
+    return s
+
+
 def roll_dice():
     global Dice
+    global turn
+    global pos1, pos2
+    global ply1_btn, ply2_btn
 
     r = random.randint(1, 6)
     dice_btn = tk.Button(root, image=Dice[r - 1], height=80, width=80)
     dice_btn.place(x=1025, y=150)
+
+    if turn == 1:
+        if (pos1 + r) <= 100:
+            pos1 += r
+        lad = check_ladder(turn)
+        snk = check_snake(turn)
+        move_coin(turn, pos1)
+        if r != 6 and lad != 1 and snk != 1:
+            turn = 2
+            ply1_btn.configure(state="disabled")
+            ply2_btn.configure(state="normal")
+    else:
+        if (pos2 + r) <= 100:
+            pos2 += r
+        lad = check_ladder(turn)
+        snk = check_snake(turn)
+        move_coin(turn, pos2)
+        if r != 6 and lad != 1 and snk != 1:
+            turn = 1
+            ply1_btn.configure(state="normal")
+            ply2_btn.configure(state="disabled")
+
+
+def move_coin(turn, r):
+    global coin1, coin2, Index
+
+    if turn == 1:
+        coin1.place(x=Index[r][0], y=Index[r][1])
+    else:
+        coin2.place(x=Index[r][0], y=Index[r][1])
+
+    is_winner()
+
+
+def is_winner():
+    global pos1, pos2
+
+    if pos1 == 100:
+        msg = "Player 1 is the winner"
+        lab = tk.Label(
+            root, text=msg, height=2, width=20, bg="red", font=("Cursive", 30, "bold")
+        )
+        lab.place(x=300, y=300)
+        reset_coins()
+    elif pos2 == 100:
+        msg = "Player 2 is the winner"
+        lab = tk.Label(
+            root, text=msg, height=2, width=20, bg="red", font=("Cursive", 30, "bold")
+        )
+        lab.place(x=300, y=300)
+        reset_coins()
 
 
 def get_Index():
@@ -108,21 +180,17 @@ def get_Index():
     ]
     # fmt: on
 
-    # coin1.place(x=54 + 90 * 9, y=580 - 60 * 3)
-    # coin2.place(x=95 + 90 * 9, y=580 - 60 * 3)
-    # row = 60
-    # col = 90
-
-    row = 60
+    row = 40
     i = 0
     for x in range(1, 11):
-        col = 90
+        col = 70
         for y in range(1, 11):
             Index[Num[i]] = (col, row)
-            col = col + 101
+            col = col + 90
             i = i + 1
-        row = row + 81
-    print(Index)
+        row = row + 60
+
+    # print(Index)
 
 
 # List to store dice images
@@ -130,6 +198,16 @@ Dice = []
 
 # Store x & y coordinates of given Num
 Index = {}
+
+# initial positions of players
+# pos1 = None
+# pos2 = None
+
+# Ladder Bottom -> Top
+ladder = {4: 25, 21: 39, 29: 74, 43: 76, 63: 80, 71: 89}
+
+# Snakes Head -> Tail
+snake = {30: 7, 47: 15, 56: 19, 73: 51, 82: 42, 92: 75, 98: 55}
 
 root = tk.Tk()
 root.geometry("1200x800")
@@ -142,6 +220,31 @@ F1.place(x=0, y=0)
 img1 = ImageTk.PhotoImage(Image.open("images/snl_board.png"))
 Lab = tk.Label(F1, image=img1)
 Lab.place(x=50, y=30)
+
+# Player Buttons
+ply1_btn = tk.Button(
+    root,
+    text="Player 1",
+    height=1,
+    width=10,
+    fg="red",
+    bg="cyan",
+    font=("Cursive", 14, "bold"),
+    activebackground="white",
+    command=roll_dice,
+)
+ply2_btn = tk.Button(
+    root,
+    text="Player 2",
+    height=1,
+    width=10,
+    fg="red",
+    bg="orange",
+    font=("Cursive", 14, "bold"),
+    activebackground="white",
+    command=roll_dice,
+)
+
 
 # Player 1 coin
 coin1 = tk.Canvas(root, width=40, height=40)
